@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -18,7 +19,7 @@ class UserController extends Controller
     {
         $data = $request->validated();
 
-        if (User::where('username', $data['username'])->count() == 1) {
+        if (User::where('username', $data['username'])->exists()) {
             // Jika username sudah ada di database
             throw new HttpResponseException(response([
                 'errors' =>  [
@@ -41,6 +42,7 @@ class UserController extends Controller
         $data = $request->validated();
 
         $user = User::where('username', $data['username'])->first();
+
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw new HttpResponseException(response([
                 'errors' =>  [
@@ -54,6 +56,13 @@ class UserController extends Controller
         $user->token = Str::uuid()->toString();
         $user->save();
 
+        return new UserResource($user);
+    }
+
+
+    public function get(Request $request): UserResource
+    {
+        $user = Auth::user();
         return new UserResource($user);
     }
 }
