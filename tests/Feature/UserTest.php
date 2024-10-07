@@ -199,12 +199,12 @@ class UserTest extends TestCase
         $oldUser = User::where('username', 'tes')->first();
 
         // Simulasi login dan dapatkan token
-        $loginResponse = $this->post('/api/users/login', [
-            'username' => 'tes',
-            'password' => 'tes' // sesuaikan dengan password user yang ada di database
-        ]);
+        // $loginResponse = $this->post('/api/users/login', [
+        //     'username' => 'tes',
+        //     'password' => 'update password' // sesuaikan dengan password user yang ada di database
+        // ]);
 
-        $token = $loginResponse->json('data.token'); // asumsikan token ada di 'data.token'
+        // $token = $loginResponse->json('data.token'); // asumsikan token ada di 'data.token'
 
         $response = $this->patch(
             '/api/users/current',
@@ -212,7 +212,7 @@ class UserTest extends TestCase
                 'name' => 'update name baru'
             ],
             [
-                'Authorization' => 'Bearer ' . $token
+                'Authorization' => 'Bearer ' . 'tes'
             ]
         );
 
@@ -230,15 +230,14 @@ class UserTest extends TestCase
     public function testUpdateFailed()
     {
         $this->seed(UserSeeder::class);
-        $oldUser = User::where('username', 'tes')->first();
 
         // Simulasi login dan dapatkan token
-        $loginResponse = $this->post('/api/users/login', [
-            'username' => 'tes',
-            'password' => 'tes' // sesuaikan dengan password user yang ada di database
-        ]);
+        // $loginResponse = $this->post('/api/users/login', [
+        //     'username' => 'tes',
+        //     'password' => 'tes' // sesuaikan dengan password user yang ada di database
+        // ]);
 
-        $token = $loginResponse->json('data.token'); // asumsikan token ada di 'data.token'
+        // $token = $loginResponse->json('data.token'); // asumsikan token ada di 'data.token'
 
         $response = $this->patch(
             '/api/users/current',
@@ -247,7 +246,7 @@ class UserTest extends TestCase
 '
             ],
             [
-                'Authorization' => 'Bearer ' . $token
+                'Authorization' => 'Bearer ' . 'tes'
             ]
         );
 
@@ -256,6 +255,41 @@ class UserTest extends TestCase
                 'name' => [
                     'The name field must not be greater than 100 characters.'
                 ]
+            ]
+        ]);
+    }
+
+    public function testLogoutSuccess()
+    {
+        $this->seed(UserSeeder::class);
+
+        $response = $this->delete('/api/users/logout', [], [
+            'Authorization' => 'Bearer ' . 'tes'
+        ]);
+
+        $response->assertStatus(204);
+    }
+
+    public function testLogoutFailedInvalidToken()
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->delete('/api/users/logout', [], [
+            'Authorization' => 'Bearer ' . 'salah'
+        ])->assertStatus(401)->assertJson([
+            'errors' => [
+                'message' => 'Invalid token'
+            ]
+        ]);
+    }
+
+    public function testLogoutFailedTokenUnauthorized()
+    {
+        $this->seed(UserSeeder::class);
+
+        $this->delete('/api/users/logout')->assertStatus(401)->assertJson([
+            'errors' => [
+                'message' => 'Unautorized'
             ]
         ]);
     }
