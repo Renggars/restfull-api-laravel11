@@ -268,6 +268,9 @@ class UserTest extends TestCase
         ]);
 
         $response->assertStatus(204);
+
+        $user = User::where('username', 'tes')->first();
+        $this->assertNull($user->token);
     }
 
     public function testLogoutFailedInvalidToken()
