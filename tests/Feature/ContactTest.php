@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Models\Contact;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\ContactSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -102,6 +104,73 @@ class ContactTest extends TestCase
         $response->assertStatus(401)->assertJson([
             'errors' => [
                 'message' => 'Unautorized'
+            ]
+        ]);
+    }
+
+    public function testGetSuccess()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class]);
+
+        $contact = Contact::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . $contact->id,
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(200)->assertJson([
+            'data' => [
+                'first_name' => 'tes',
+                'last_name' => 'tes',
+                'email' => 'tes@gmail.com',
+                'phone' => 'tes',
+            ]
+        ]);
+    }
+
+    public function testGetNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class]);
+
+        $contact = Contact::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . ($contact->id + 1),
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Contact not found'
+                ]
+            ]
+        ]);
+    }
+
+    public function testGetOtherUserContact()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class]);
+
+        $contact = Contact::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . $contact->id,
+            [
+                'Authorization' => 'Bearer ' . 'tes2'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Contact not found'
+                ]
             ]
         ]);
     }
