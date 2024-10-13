@@ -253,4 +253,32 @@ class AddressTest extends TestCase
             ]
         ]);
     }
+
+    public function testUpdateFailed()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->put(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . $address->id,
+            [
+                'street' => 'street',
+                'city' => 'city',
+                'province' => 'province',
+                'country' => '',
+                'postal_code' => 'postal'
+            ],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(400)->assertJson([
+            'errors' => [
+                'country' => [
+                    'The country field is required.'
+                ],
+            ]
+        ]);
+    }
 }
