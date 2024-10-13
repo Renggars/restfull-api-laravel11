@@ -146,4 +146,111 @@ class AddressTest extends TestCase
             ]
         ]);
     }
+
+    public function testGetAddressNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . ($address->id + 1),
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Address not found'
+                ]
+            ]
+        ]);
+    }
+
+    public function testUpdateSuccess()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->put(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . $address->id,
+            [
+                'street' => 'update',
+                'city' => 'update',
+                'province' => 'update',
+                'country' => 'update',
+                'postal_code' => 'postal'
+            ],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(200)->assertJson([
+            'data' => [
+                'street' => 'update',
+                'city' => 'update',
+                'province' => 'update',
+                'country' => 'update',
+                'postal_code' => 'postal'
+            ]
+        ]);
+    }
+
+    public function testUpdateContactNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->put(
+            '/api/contacts/' . ($address->contact->id + 1) . '/addresses' . '/' . $address->id,
+            [
+                'street' => 'street',
+                'city' => 'city',
+                'province' => 'province',
+                'country' => 'country',
+                'postal_code' => 'postal'
+            ],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Contact not found'
+                ]
+            ]
+        ]);
+    }
+
+    public function testUpdateAddressNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->put(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . ($address->id + 1),
+            [
+                'street' => 'street',
+                'city' => 'city',
+                'province' => 'province',
+                'country' => 'country',
+                'postal_code' => 'postal'
+            ],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Address not found'
+                ]
+            ]
+        ]);
+    }
 }
