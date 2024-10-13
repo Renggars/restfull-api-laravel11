@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Models\Address;
 use App\Models\Contact;
 use Database\Seeders\UserSeeder;
+use Database\Seeders\AddressSeeder;
 use Database\Seeders\ContactSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -86,6 +88,51 @@ class AddressTest extends TestCase
                 'country' => 'country',
                 'postal_code' => 'postal'
             ],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Contact not found'
+                ]
+            ]
+        ]);
+    }
+
+    public function testGetSuccess()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . $address->id,
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(200)->assertJson([
+            'data' => [
+                'id' => $address->id,
+                'street' => 'street',
+                'city' => 'city',
+                'province' => 'province',
+                'country' => 'country',
+                'postal_code' => 'postal'
+            ]
+        ]);
+    }
+
+    public function testGetContactNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . ($address->contact->id + 1) . '/addresses' . '/' . $address->id,
             [
                 'Authorization' => 'Bearer ' . 'tes'
             ]
