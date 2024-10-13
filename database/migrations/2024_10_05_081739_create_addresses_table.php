@@ -21,7 +21,8 @@ return new class extends Migration
             $table->foreignId('contact_id')->constrained(
                 table: 'contacts',
                 indexName: 'addresses_contact_id'
-            );
+            )->onDelete('cascade')
+                ->onUpdate('cascade');
             $table->timestamps();
         });
     }
