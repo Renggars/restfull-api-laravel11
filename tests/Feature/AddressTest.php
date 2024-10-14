@@ -281,4 +281,66 @@ class AddressTest extends TestCase
             ]
         ]);
     }
+
+    public function testDeleteSuccess()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->delete(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . $address->id,
+            [],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(200)->assertJson([
+            'message' => 'Address deleted'
+        ]);
+    }
+
+    public function testDeleteContactNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->delete(
+            '/api/contacts/' . ($address->contact->id + 1) . '/addresses' . '/' . $address->id,
+            [],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Contact not found'
+                ]
+            ]
+        ]);
+    }
+
+    public function testDeleteAddressNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $address = Address::query()->limit(1)->first();
+
+        $response = $this->delete(
+            '/api/contacts/' . $address->contact->id . '/addresses' . '/' . ($address->id + 1),
+            [],
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Address not found'
+                ]
+            ]
+        ]);
+    }
 }
