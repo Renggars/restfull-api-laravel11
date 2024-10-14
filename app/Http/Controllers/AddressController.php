@@ -99,4 +99,15 @@ class AddressController extends Controller
             'message' => 'Address deleted'
         ], 200);
     }
+
+    public function list(int $idContact): JsonResponse
+    {
+        $user = Auth::user();
+        $contact = $this->getContact($user, $idContact);
+        $addresses = Address::where('contact_id', $contact->id)->get();
+
+        return response()->json([
+            'data' => AddressResource::collection($addresses)
+        ], 200);
+    }
 }

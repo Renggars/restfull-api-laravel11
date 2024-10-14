@@ -343,4 +343,50 @@ class AddressTest extends TestCase
             ]
         ]);
     }
+
+    public function testListSuccess()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $contact = Contact::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . $contact->id . '/addresses',
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(200)->assertJson([
+            'data' => [
+                [
+                    'street' => 'street',
+                    'city' => 'city',
+                    'province' => 'province',
+                    'country' => 'country',
+                    'postal_code' => 'postal'
+                ]
+            ]
+        ]);
+    }
+
+    public function testListContactNotFound()
+    {
+        $this->seed([UserSeeder::class, ContactSeeder::class, AddressSeeder::class]);
+        $contact = Contact::query()->limit(1)->first();
+
+        $response = $this->get(
+            '/api/contacts/' . ($contact->id + 1) . '/addresses',
+            [
+                'Authorization' => 'Bearer ' . 'tes'
+            ]
+        );
+
+        $response->assertStatus(404)->assertJson([
+            'errors' => [
+                'message' => [
+                    'Contact not found'
+                ]
+            ]
+        ]);
+    }
 }
